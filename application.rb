@@ -1,16 +1,17 @@
-#           __
-#   __  __ /\_\    ___ ___     ____     __   _ __   __  __     __   _ __
-#  /\ \/\ \\/\ \ /' __` __`\  /',__\  /'__`\/\`'__\/\ \/\ \  /'__`\/\`'__\
-#  \ \ \_/ |\ \ \/\ \/\ \/\ \/\__, `\/\  __/\ \ \/ \ \ \_/ |/\  __/\ \ \/
-#   \ \___/  \ \_\ \_\ \_\ \_\/\____/\ \____\\ \_\  \ \___/ \ \____\\ \_\
-#    \/__/    \/_/\/_/\/_/\/_/\/___/  \/____/ \/_/   \/__/   \/____/ \/_/
+#           __      __
+#          /\ \  __/\ \__
+#     __   \_\ \/\_\ \ ,_\   ____     __   _ __   __  __     __   _ __
+#   /'__`\ /'_` \/\ \ \ \/  /',__\  /'__`\/\`'__\/\ \/\ \  /'__`\/\`'__\
+#  /\  __//\ \L\ \ \ \ \ \_/\__, `\/\  __/\ \ \/ \ \ \_/ |/\  __/\ \ \/
+#  \ \____\ \___,_\ \_\ \__\/\____/\ \____\\ \_\  \ \___/ \ \____\\ \_\
+#   \/____/\/__,_ /\/_/\/__/\/___/  \/____/ \/_/   \/__/   \/____/ \/_/
 #
-#                                             guns <sung@metablu.com>
+#                                           guns <sung@metablu.com>
 
 require 'fileutils'
 require 'shellwords'
 
-class VimServer
+class EditServer
   class VimError < StandardError; end
 
   attr_accessor :request, :response
@@ -54,7 +55,7 @@ class VimServer
     when 'chrome-extension://ppoadiihggafnhokfkpphojggcdigllp' # TextAid
       request.params['id'] + ' ' + request.params['url'].gsub(/\W+/, '-') + '.txt'
     else
-      'vimserver.txt'
+      'editserver.txt'
     end
   end
 
