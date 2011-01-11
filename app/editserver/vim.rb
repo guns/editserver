@@ -1,9 +1,5 @@
 class EditServer
   class Vim
-    def initialize request
-      @request = request
-    end
-
     def vim *args
       @@vim ||= begin
         bin = %x(which vim).chomp
@@ -26,11 +22,8 @@ class EditServer
     end
 
     # FIXME: files should be temporary; client should send extant text
-    def edit name
+    def edit file
       if server_available?
-        file = "/tmp/editserver/#{name}"
-        FileUtils.mkdir_p File.dirname(file), :mode => 0700
-        File.open(file, 'a', 0600).close
         vim '--servername', 'vimserver', '--remote-tab-wait', file
         File.read file
       else

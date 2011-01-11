@@ -1,9 +1,5 @@
 class EditServer
   class Mate
-    def initialize request
-      @request = request
-    end
-
     def mate *args
       @@mate ||= begin
         bin = '/Applications/TextMate.app/Contents/Resources/mate'
@@ -21,10 +17,7 @@ class EditServer
       end
     end
 
-    def edit name
-      file = "/tmp/editserver/#{name}"
-      FileUtils.mkdir_p File.dirname(file), :mode => 0700
-      File.open(file, 'a', 0600).close
+    def edit file
       mate file
       File.read file
     end

@@ -27,20 +27,30 @@ class EditServer
     end
   end
 
-  def filename
-    case request.env['HTTP_ORIGIN']
+  def filepath
+    name = case request.env['HTTP_ORIGIN']
     when 'chrome-extension://ppoadiihggafnhokfkpphojggcdigllp' # TextAid
       request.params['id'] + ' ' + request.params['url'].gsub(/\W+/, '-') + '.txt'
     else
       'editserver.txt'
     end
+
+    dir  = '/tmp/editserver'
+    file = "#{dir}/#{name}"
+
+    FileUtils.mkdir_p dir             # create dir
+    FileUtils.chmod 0700, dir         # ensure permissions even if already exists
+    File.open(file, 'a', 0600).close  # create file
+    FileUtils.chmod 0600, file        # ensure permissions
+
+    file
   end
 
   def call env
     self.request  = Rack::Request.new env
     self.response = Rack::Response.new
 
-    response.write editor.new(request).edit(filename)
+    response.write editor.new.edit(filepath)
     response.finish
   rescue EditError => e
     response.write e.to_s
