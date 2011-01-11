@@ -1,5 +1,7 @@
+$:.unshift File.expand_path('../app', __FILE__)
+
 require 'bundler/setup'
-require File.expand_path('../application.rb', __FILE__)
+require 'editserver'
 
 [$stdout, $stderr].each { |io| io.reopen 'editserver.log', 'a' }
 
