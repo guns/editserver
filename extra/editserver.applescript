@@ -11,6 +11,7 @@ tell current application
     tell application "System Events"
         keystroke "a" using command down
         keystroke "c" using command down
+        delay 0.5 -- account for GUI scripting lag
     end tell
 
     set app_name to name of current application as text
