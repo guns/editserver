@@ -35,22 +35,32 @@ class EditServer
   end
 
   def filepath
-    name = case request.env['HTTP_ORIGIN']
-    when 'chrome-extension://ppoadiihggafnhokfkpphojggcdigllp' # TextAid
-      request.params['id'] + ' ' + request.params['url'].gsub(/\W+/, '-') + '.txt'
+    # `id' and `url' sent by TextAid
+    name = if (id = request.params['id']) and (url = request.params['url'])
+      "#{id}-#{url}.txt"
     else
-      'editserver.txt'
+      request.env['HTTP_USER_AGENT'][/\A(\S+)?/, 1]
     end
 
-    dir  = '/tmp/editserver'
-    file = "#{dir}/#{name}"
+    text = request.params['text']
 
-    FileUtils.mkdir_p dir             # create dir
-    FileUtils.chmod 0700, dir         # ensure permissions even if already exists
-    File.open(file, 'a', 0600).close  # create file
-    FileUtils.chmod 0600, file        # ensure permissions
+    dir  = '/tmp/editserver'
+    file = "#{dir}/#{sanitize name}"
+
+    FileUtils.mkdir_p dir
+    FileUtils.chmod 0700, dir
+    if text
+      File.open(file, 'w', 0600) { |f| f.write text }
+    else
+      File.open(file, 'a', 0600).close
+    end
+    FileUtils.chmod 0600, file
 
     file
+  end
+
+  def sanitize str
+    str.gsub /[^\w\.]+/, '-'
   end
 
   def call env
