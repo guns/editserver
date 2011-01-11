@@ -11,6 +11,7 @@
 require 'fileutils'
 require 'shellwords'
 require 'editserver/vim'
+require 'editserver/mate'
 
 class EditServer
   class EditError < StandardError; end
