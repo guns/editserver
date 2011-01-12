@@ -16,6 +16,8 @@ require 'editserver/mate'
 class EditServer
   class EditError < StandardError; end
 
+  VERSION = '0.0.1'
+
   attr_accessor :request, :response
 
   # returns EditServer handler based on path
