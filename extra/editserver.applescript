@@ -4,26 +4,43 @@
     guns <sung@metablu.com>
     http://github.com/guns/editserver
     MIT LICENSE
+
+    "AppleScript sucks"
 *)
 
-tell current application
-    -- Surprisingly more reliable than other programmatic methods
+tell application "System Events"
+    set current_app to name of (first process whose frontmost is true) as text
+end tell
+
+tell application current_app
+    activate -- script is probably being executed by a launcher
+
+    -- HACK: tell messages are async, so we delay, since I don't know how
+    --       to register a callback in AppleScript
     tell application "System Events"
+        delay 0.5
         keystroke "a" using command down
+        delay 0.5
         keystroke "c" using command down
-        delay 0.5 -- account for GUI scripting lag
     end tell
+end tell
 
-    set app_name to name of current application as text
-    set output to do shell script "/usr/bin/env ruby -r cgi -e '
-        system *%W[curl -s --data id=applescript
-                           --data url=#{CGI.escape %q(" & app_name & ")}
-                           --data text=#{CGI.escape %x(pbpaste)}
-                           http://editserver.dev/]
-        ' | pbcopy"
+-- URI.escape does not escape `&'s; CGI.escape is more thorough
+set output to do shell script "/usr/bin/env ruby -r cgi -e '
+    system *%W[curl -s --data id=applescript
+                       --data url=#{CGI.escape %q(" & current_app & ")}
+                       --data text=#{CGI.escape %x(pbpaste)}
+                       http://editserver.dev/]
+    ' | pbcopy" -- pipe to clipboard
 
+tell application current_app
+    activate -- make sure we switch back; not all editors will raise focus
+
+    -- HACK: see above
     tell application "System Events"
+        delay 0.5
         keystroke "a" using command down
+        delay 0.5
         keystroke "v" using command down
     end tell
 end tell
