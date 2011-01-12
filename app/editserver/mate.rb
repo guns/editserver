@@ -1,3 +1,5 @@
+require 'shellwords'
+
 class EditServer
   class Mate
     def mate *args

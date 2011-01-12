@@ -8,8 +8,7 @@
 #
 #                                           guns <sung@metablu.com>
 
-require 'fileutils'
-require 'shellwords'
+require 'tempfile'
 require 'editserver/vim'
 require 'editserver/mate'
 
@@ -18,7 +17,7 @@ class EditServer
 
   VERSION = '0.0.1'
 
-  attr_accessor :request, :response
+  attr_accessor :request, :response, :tempfile
 
   # returns EditServer handler based on path
   def editor
@@ -36,33 +35,30 @@ class EditServer
     end
   end
 
-  def filepath
+  def filename
     # `id' and `url' sent by TextAid
-    name = if (id = request.params['id']) and (url = request.params['url'])
-      "#{id}-#{url}.txt"
+    if (id = request.params['id']) and (url = request.params['url'])
+      "editserver-#{id}-#{url}"
+    elsif id
+      "editserver-#{id}"
     else
-      request.env['HTTP_USER_AGENT'][/\A(\S+)?/, 1]
+      'editserver-' + request.env['HTTP_USER_AGENT'][/\A(\S+)?/, 1]
     end
+  end
 
-    text = request.params['text']
+  def filepath
+    return tempfile.path if tempfile
 
-    dir  = '/tmp/editserver'
-    file = "#{dir}/#{sanitize name}"
+    self.tempfile = Tempfile.new sanitize(filename)
+    text          = request.params['text']
 
-    FileUtils.mkdir_p dir
-    FileUtils.chmod 0700, dir
-    if text
-      File.open(file, 'w', 0600) { |f| f.write text }
-    else
-      File.open(file, 'a', 0600).close
-    end
-    FileUtils.chmod 0600, file
-
-    file
+    # TODO: Why doesn't tempfile.write work here?
+    File.open(tempfile.path, 'w') { |f| f.write text } if text
+    tempfile.path
   end
 
   def sanitize str
-    str.gsub /[^\w\.]+/, '-'
+    str.gsub /[^\w\. ]+/, '-'
   end
 
   def call env
@@ -74,5 +70,10 @@ class EditServer
   rescue EditError => e
     response.write e.to_s
     response.finish
+  ensure
+    if tempfile
+      tempfile.close
+      tempfile.unlink
+    end
   end
 end
