@@ -24,6 +24,7 @@ class EditServer
     case path = request.path_info[%r(\A/([\w-]+?)\b), 1]
     when 'vim'  then EditServer::Vim
     when 'mate' then EditServer::Mate
+    when nil    then EditServer::Vim  # TODO: should be a config option
     else
       raise EditError, "No handler for #{path}"
     end
