@@ -24,12 +24,6 @@ class EditServer
     case path = request.path_info[%r(\A/([\w-]+?)\b), 1]
     when 'vim'  then EditServer::Vim
     when 'mate' then EditServer::Mate
-    when nil
-      if EditServer::Vim.new.server_available?
-        EditServer::Vim
-      else
-        EditServer::Mate
-      end
     else
       raise EditError, "No handler for #{path}"
     end
@@ -69,6 +63,7 @@ class EditServer
     response.finish
   rescue EditError => e
     response.write e.to_s
+    response.status = 500 # server error
     response.finish
   ensure
     if tempfile
