@@ -1,23 +1,8 @@
-require 'shellwords'
+require 'editserver/editor'
 
 class EditServer
-  class Mate
-    def mate *args
-      @@mate ||= begin
-        bin = '/Applications/TextMate.app/Contents/Resources/mate'
-        raise EditError, 'Mate not found!' unless File.executable? bin
-        bin
-      end
-
-      cmd = [@@mate, '-w', *args]
-      out = %x(#{cmd.shelljoin} 2>&1).chomp
-
-      if $?.exitstatus.zero?
-        out
-      else
-        raise EditError, out
-      end
-    end
+  class Mate < Editor
+    define_editor 'mate', '-w'
 
     def edit file
       mate file

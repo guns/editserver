@@ -1,35 +1,25 @@
-require 'shellwords'
+require 'editserver/editor'
 
 class EditServer
-  class Vim
-    def vim *args
-      @@vim ||= begin
-        bin = %x(which vim).chomp
-        raise EditError, 'Vim not found!' unless File.executable? bin
-        bin
-      end
-
-      cmd = [@@vim, *args]
-      out = %x(#{cmd.shelljoin} 2>&1).chomp
-
-      if $?.exitstatus.zero?
-        out
-      else
-        raise EditError, out
-      end
-    end
+  class Vim < Editor
+    define_editor 'vim'
 
     def server_available?
       vim('--serverlist').split("\n").map { |l| l.strip.downcase }.include? 'editserver'
     end
 
+    # FIXME: this shouldn't be hard-coded
+    def open_term
+      pid = fork { exec '/opt/nerv/bin/rxvt-unicode -r -- -e vim --servername editserver' }
+      sleep 2 # HACK
+      Process.detach pid
+    end
+
     def edit file
-      if server_available?
-        vim '--servername', 'editserver', '--remote-tab-wait', file
-        File.read file
-      else
-        raise EditError, 'No Vim server available!'
-      end
+      open_term unless server_available?
+
+      vim '--servername', 'editserver', '--remote-tab-wait', file
+      File.read file
     end
   end
 end
