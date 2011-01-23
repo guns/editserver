@@ -9,7 +9,7 @@ if RUBY_PLATFORM[/darwin/]
     outfile = File.expand_path '~/Library/Scripts/editserver.scpt'
     cmd     = ['osacompile', '-o', outfile, infile]
 
-    FileUtils.mkdir_p File.basename(outfile)
+    FileUtils.mkdir_p File.dirname(outfile)
     puts cmd.shelljoin
     system *cmd
   end
