@@ -15,7 +15,7 @@ require 'editserver/mate'
 class EditServer
   class EditError < StandardError; end
 
-  VERSION = '0.0.1'
+  VERSION = '0.0.2'
 
   attr_accessor :request, :response, :tempfile
 
