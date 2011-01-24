@@ -5,7 +5,7 @@ class EditServer
     class << self
 
       def define_editor editor, *params
-        define_method editor.to_sym do |*args|
+        define_method editor do |*args|
           @@editor ||= begin
             bin = %x(which #{editor}).chomp
             raise EditError, "#{editor} not found!" unless File.executable? bin
@@ -29,4 +29,3 @@ class EditServer
     end
   end
 end
-
