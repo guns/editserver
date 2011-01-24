@@ -25,7 +25,15 @@ class EditServer
     end
 
     def edit file
-      'Redefine the Editor#edit method.'
+      File.open file, 'w' do |f|
+        f.write %Q{\
+          Missing: #{self.class}#edit
+
+            * Should accept one argument (file to edit)
+            * Should block until file is written (this is a nice time to open a editor)
+            * Return value is discarded; raise EditError to return HTTP 500
+        }.gsub(/^ {10}/, '')
+      end
     end
   end
 end

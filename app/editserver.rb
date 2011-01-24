@@ -60,7 +60,9 @@ class EditServer
     self.request  = Rack::Request.new env
     self.response = Rack::Response.new
 
-    response.write editor.new.edit(filepath)
+    editor.new.edit(filepath)
+
+    response.write File.read(filepath)
     response.finish
   rescue EditError => e
     response.write e.to_s

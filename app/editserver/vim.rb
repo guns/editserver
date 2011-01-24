@@ -17,9 +17,7 @@ class EditServer
 
     def edit file
       open_term unless server_available?
-
       vim '--servername', 'editserver', '--remote-tab-wait', file
-      File.read file
     end
   end
 end

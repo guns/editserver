@@ -6,7 +6,6 @@ class EditServer
 
     def edit file
       mate file
-      File.read file
     end
   end
 end
