@@ -15,7 +15,7 @@ require 'editserver/mate'
 class EditServer
   class EditError < StandardError; end
 
-  VERSION = '0.0.2'
+  VERSION = '0.0.3'
 
   attr_accessor :request, :response, :tempfile
 
@@ -37,10 +37,10 @@ class EditServer
     url  = request.params['url']
 
     if id or url
-      name << "-#{id}"  if id
-      name << "-#{url}" if url
+      name << '-' << id  if id
+      name << '-' << url if url
     else
-      name << request.env['HTTP_USER_AGENT'][/\A(\S+)?/, 1]
+      name << '-' << request.env['HTTP_USER_AGENT'][/\A(\S+)?/, 1]
     end
   end
 
