@@ -1,30 +1,18 @@
-#           __      __
-#          /\ \  __/\ \__
-#     __   \_\ \/\_\ \ ,_\   ____     __   _ __   __  __     __   _ __
-#   /'__`\ /'_` \/\ \ \ \/  /',__\  /'__`\/\`'__\/\ \/\ \  /'__`\/\`'__\
-#  /\  __//\ \L\ \ \ \ \ \_/\__, `\/\  __/\ \ \/ \ \ \_/ |/\  __/\ \ \/
-#  \ \____\ \___,_\ \_\ \__\/\____/\ \____\\ \_\  \ \___/ \ \____\\ \_\
-#   \/____/\/__,_ /\/_/\/__/\/___/  \/____/ \/_/   \/__/   \/____/ \/_/
-#
-#                                           guns <sung@metablu.com>
-
 require 'tempfile'
 require 'editserver/vim'
 require 'editserver/mate'
 
-class EditServer
+class Editserver
   class EditError < StandardError; end
-
-  VERSION = '0.0.3'
 
   attr_accessor :request, :response, :tempfile
 
-  # returns EditServer handler based on path
+  # returns Editserver handler based on path
   def editor
     case path = request.path_info[%r(\A/([\w-]+?)\b), 1]
-    when 'vim'  then EditServer::Vim
-    when 'mate' then EditServer::Mate
-    when nil    then EditServer::Vim  # TODO: should be a config option
+    when 'vim'  then Editserver::Vim
+    when 'mate' then Editserver::Mate
+    when nil    then Editserver::Vim  # TODO: should be a config option
     else
       raise EditError, "No handler for #{path}"
     end

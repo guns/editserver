@@ -1,5 +1,7 @@
 require 'shellwords'
 require 'fileutils'
+require 'bundler'
+Bundler::GemHelper.install_tasks
 
 if RUBY_PLATFORM[/darwin/]
   desc 'Compile included AppleScript and place in ~/Library/Scripts/'

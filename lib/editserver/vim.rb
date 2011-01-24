@@ -1,6 +1,6 @@
 require 'editserver/editor'
 
-class EditServer
+class Editserver
   class Vim < Editor
     define_editor 'vim', '--servername', 'editserver'
 

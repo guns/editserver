@@ -1,6 +1,6 @@
 require 'editserver/editor'
 
-class EditServer
+class Editserver
   class Mate < Editor
     define_editor 'mate', '-w'
   end
