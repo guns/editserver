@@ -32,12 +32,15 @@ class EditServer
 
   def filename
     # `id' and `url' sent by TextAid
-    if (id = request.params['id']) and (url = request.params['url'])
-      "editserver-#{id}-#{url}"
-    elsif id
-      "editserver-#{id}"
+    name = 'editserver'
+    id   = request.params['id']
+    url  = request.params['url']
+
+    if id or url
+      name << "-#{id}"  if id
+      name << "-#{url}" if url
     else
-      'editserver-' + request.env['HTTP_USER_AGENT'][/\A(\S+)?/, 1]
+      name << request.env['HTTP_USER_AGENT'][/\A(\S+)?/, 1]
     end
   end
 
