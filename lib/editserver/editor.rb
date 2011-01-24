@@ -5,14 +5,17 @@ class Editserver
     class << self
 
       def define_editor editor, *params
-        define_method editor do |*args|
-          @@editor ||= begin
-            bin = %x(which #{editor}).chomp
-            raise EditError, "#{editor} not found!" unless File.executable? bin
-            [bin, *params]
-          end
+        self.class.instance_eval do
+          bin = %x(which #{editor}).chomp
+          raise RuntimeError, "#{editor} not found!" unless File.executable? bin
 
-          out = %x(#{[*@@editor, *args].shelljoin} 2>&1).chomp
+          # class attribute: Vim.command # => ['vim']
+          attr_accessor :command
+          self.command = [bin, *params]
+        end
+
+        define_method editor do |*args|
+          out = %x(#{[*self.class.command, *args].shelljoin} 2>&1).chomp
 
           if $?.exitstatus.zero?
             out
