@@ -1,4 +1,5 @@
+pkg/*
+*.gem
+.bundle
 Gemfile.lock
-editserver.log
-tmp/restart.txt
 extra/editserver.scpt
