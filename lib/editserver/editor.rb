@@ -1,6 +1,6 @@
 require 'shellwords'
 
-class EditServer
+class Editserver
   class Editor
     class << self
 

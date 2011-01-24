@@ -12,19 +12,19 @@ require 'tempfile'
 require 'editserver/vim'
 require 'editserver/mate'
 
-class EditServer
+class Editserver
   class EditError < StandardError; end
 
   VERSION = '0.0.3'
 
   attr_accessor :request, :response, :tempfile
 
-  # returns EditServer handler based on path
+  # returns Editserver handler based on path
   def editor
     case path = request.path_info[%r(\A/([\w-]+?)\b), 1]
-    when 'vim'  then EditServer::Vim
-    when 'mate' then EditServer::Mate
-    when nil    then EditServer::Vim  # TODO: should be a config option
+    when 'vim'  then Editserver::Vim
+    when 'mate' then Editserver::Mate
+    when nil    then Editserver::Vim  # TODO: should be a config option
     else
       raise EditError, "No handler for #{path}"
     end
