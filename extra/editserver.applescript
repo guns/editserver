@@ -1,5 +1,5 @@
 (*
-    Edit in EditServer
+    Edit in Editserver
 
     guns <sung@metablu.com>
     http://github.com/guns/editserver
