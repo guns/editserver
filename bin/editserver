@@ -1,0 +1,51 @@
+#!/usr/bin/env ruby
+# encoding: utf-8
+
+require 'optparse'
+require 'rack'
+require 'editserver'
+
+class Editserver::Command
+  def initialize args = []
+    @args = args
+    @opts = {
+      :environment => 'development',
+      :pid         => nil,
+      :Port        => 9292,
+      :Host        => '127.0.0.1',
+      :AccessLog   => [],
+      :config      => ''
+    }
+  end
+
+  def options
+    OptionParser.new do |opt|
+      opt.summary_width = 20
+
+      opt.banner = %Q(\
+        Usage: #{File.basename $0} [options]
+
+        Options:
+      ).gsub /^ +/, ''
+
+      opt.on '-p', '--port NUMBER', Integer, "default: #{@opts[:Port]}" do |arg|
+        @opts[:Port] = arg
+      end
+    end
+  end
+
+  def server
+    # HACK: Fixed in master -- remove when upgrading min rack dependency
+    # http://groups.google.com/group/rack-devel/browse_thread/thread/8f6c3b79c99809ee
+    s = Rack::Server.new @opts
+    s.instance_variable_set :@app, Editserver.new
+    s
+  end
+
+  def run
+    options.parse @args
+    server.start
+  end
+end
+
+Editserver::Command.new(ARGV).run
