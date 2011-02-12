@@ -30,7 +30,7 @@ set output to do shell script "/usr/bin/env ruby -r cgi -e '
     system *%W[curl -s --data id=applescript
                        --data url=#{CGI.escape %q(" & current_app & ")}
                        --data text=#{CGI.escape %x(pbpaste)}
-                       http://editserver.dev/]
+                       127.0.0.1:<%= @port %>]
     ' | pbcopy" -- pipe to clipboard
 
 tell application current_app
