@@ -12,7 +12,6 @@
 TODO
 ----
 
- * CLI
  * ~/.editserverrc
  * Improve applescript situation
  * X client
