@@ -11,7 +11,7 @@ class Editserver::Command
     @opts = {
       :environment => 'development',
       :pid         => nil,
-      :Port        => 9000,
+      :Port        => 9999,
       :Host        => '127.0.0.1',
       :AccessLog   => [],
       :config      => ''
