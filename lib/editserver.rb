@@ -28,7 +28,7 @@ class Editserver
       name << '-' << id  if id
       name << '-' << url if url
     else
-      name << '-' << request.env['HTTP_USER_AGENT'][/\A(\S+)?/, 1]
+      name << '-' << request.env['HTTP_USER_AGENT'].split.first
     end
   end
 
