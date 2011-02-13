@@ -2,13 +2,15 @@
 # encoding: utf-8
 
 require 'optparse'
+require 'yaml'
 require 'rack'
 require 'editserver'
 
 class Editserver::Command
   def initialize args = []
     @args = args
-    @opts = {
+    @opts = { :rcfile => File.expand_path("~/.#{File.basename $0}rc") }
+    @rackopts = {
       :environment => 'development',
       :pid         => nil,
       :Port        => 9999,
@@ -28,8 +30,13 @@ class Editserver::Command
         Options:
       ).gsub /^ +/, ''
 
-      opt.on '-p', '--port NUMBER', Integer, "default: #{@opts[:Port]}" do |arg|
-        @opts[:Port] = arg
+      opt.on '-p', '--port NUMBER', Integer, "default: #{@rackopts[:Port]}" do |arg|
+        @rackopts[:Port] = arg
+      end
+
+      opt.on '--rc PATH', "Path to rc file; #{@opts[:rcfile]} by default",
+             '(Also can be set by exporting EDITSERVERRC to environment)' do |arg|
+        @opts[:rcfile] = File.expand_path arg
       end
     end
   end
@@ -37,9 +44,9 @@ class Editserver::Command
   def server
     # HACK: Fixed in master -- remove when upgrading min rack dependency
     # http://groups.google.com/group/rack-devel/browse_thread/thread/8f6c3b79c99809ee
-    s = Rack::Server.new @opts
-    s.instance_variable_set :@app, Editserver.new
-    s
+    srv = Rack::Server.new @rackopts
+    srv.instance_variable_set :@app, Editserver.new
+    srv
   end
 
   def run
