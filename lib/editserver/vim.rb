@@ -2,7 +2,7 @@ require 'editserver/editor'
 
 class Editserver
   class Vim < Editor
-    define_editor 'vim', '--servername', 'editserver'
+    define_editor *%w[vim --servername editserver --remote-tab-wait]
 
     def server_available?
       %x(vim --serverlist).split("\n").map { |l| l.strip.downcase }.include? 'editserver'
