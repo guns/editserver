@@ -19,9 +19,8 @@ class Editserver
 
   def filename
     # `id' and `url' sent by TextAid
-    name = 'editserver'
-    id   = request.params['id']
-    url  = request.params['url']
+    name    = 'editserver'
+    id, url = request.params.values_at 'id', 'url'
 
     if id or url
       name << '-' << id  if id
