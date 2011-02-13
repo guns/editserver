@@ -5,7 +5,7 @@ class Editserver
     define_editor 'vim', '--servername', 'editserver'
 
     def server_available?
-      vim('--serverlist').split("\n").map { |l| l.strip.downcase }.include? 'editserver'
+      %x(vim --serverlist).split("\n").map { |l| l.strip.downcase }.include? 'editserver'
     end
 
     # FIXME: this shouldn't be hard-coded
@@ -17,7 +17,7 @@ class Editserver
 
     def edit file
       open_term unless server_available?
-      vim '--remote-tab-wait', file
+      super
     end
   end
 end
