@@ -1,4 +1,5 @@
 require 'tempfile'
+require 'rack'
 require 'editserver/vim'
 require 'editserver/mate'
 
