@@ -5,9 +5,7 @@ class Editserver
     define_editor 'vim', '--servername', 'editserver'
 
     def server_available?
-      %x(#{[*self.class.command, '--serverlist'].shelljoin}).split("\n").map do |l|
-        l.strip.downcase
-      end.include? 'editserver'
+      %x(vim --serverlist).split("\n").map { |l| l.strip.downcase }.include? 'editserver'
     end
 
     # FIXME: this shouldn't be hard-coded
