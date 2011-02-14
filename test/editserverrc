@@ -1,3 +1,6 @@
+editor:
+  mate: mate -w
+
 rack:
   port: 8080
 

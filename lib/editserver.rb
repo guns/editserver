@@ -1,7 +1,6 @@
 require 'tempfile'
 require 'rack'
 require 'editserver/vim'
-require 'editserver/mate'
 
 class Editserver
   class EditError < StandardError; end
@@ -12,7 +11,6 @@ class Editserver
   def editor
     case path = request.path_info[%r(\A/([\w-]+?)\b), 1]
     when 'vim'  then Editserver::Vim
-    when 'mate' then Editserver::Mate
     else
       raise EditError, "No handler for #{path}"
     end
