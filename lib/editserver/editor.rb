@@ -8,7 +8,7 @@ class Editserver
       def define_editor editor, *params
         bin = %x(which #{editor}).chomp
         raise RuntimeError, "#{editor} not found!" unless File.executable? bin
-        self.command = [bin, *params]
+        @command = [bin, *params]
       end
     end # self
 

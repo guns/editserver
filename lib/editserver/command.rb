@@ -50,10 +50,20 @@ class Editserver
     end
 
     def rcopts
-      @rcopts ||= if @opts[:norcfile]
-        {}
-      else
-        YAML.load_file File.expand_path(ENV['EDITSERVERRC'] || @opts[:rcfile])
+      @rcopts ||= begin
+        empty  = { 'rack' => {}, 'editor' => {} }
+        rcfile = ENV['EDITSERVERRC'] || @opts[:rcfile]
+
+        if @opts[:norcfile]
+          empty
+        elsif File.exists? rcfile
+          opts = YAML.load_file File.expand_path rcfile
+          opts['rack']   ||= {}
+          opts['editor'] ||= {}
+          opts
+        else
+          empty
+        end
       end
     end
 

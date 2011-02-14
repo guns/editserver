@@ -1,18 +1,57 @@
 require 'tempfile'
+require 'shellwords'
 require 'rack'
 require 'editserver/terminal/vim'
 
 class Editserver
   class EditError < StandardError; end
 
-  attr_accessor :request, :response, :tempfile
+  attr_accessor :request, :response, :tempfile, :terminal, :editors
+
+  def initialize options = {}
+    opts      = options.dup
+    @terminal = opts.delete 'terminal'
+    register_editors opts
+  end
+
+  # returns Hash of name => EditorClass
+  def register_editors opts = {}
+    @editors ||= {}
+
+    # `default' is a path to redirect to
+    if default = opts.delete('default')
+      @editors['default'] = default
+    end
+
+    # rest should be editor definitions
+    opts.each do |name, cmd|
+      klass = pascalize name
+      editor, params = cmd.shellsplit.partition.with_index { |w,i| i.zero? }
+
+      self.class.class_eval %Q(                          # e.g. mate: mate -w
+        class #{klass} < Editor                          # class Mate < Editor
+          define_editor #{editor[0].inspect}, *#{params} #   define_editor 'mate', *['-w']
+        end                                              # end
+      )
+
+      @editors[name] = self.class.const_get klass.to_sym
+    end
+
+    @editors
+  end
 
   # returns Editserver handler based on path
   def editor
-    case path = request.path_info[%r(\A/([\w-]+?)\b), 1]
-    else
-      raise EditError, "No handler for #{path}"
+    path = request.path_info[%r(\A([/\w-]+)), 1]
+
+    if klass = editors[path[/\/(.*)/, 1]]
+      klass
+    elsif path == '/'
+      klass = editors[editors['default']]
     end
+
+    raise EditError, "No handler for #{path}" if klass.nil?
+    klass
   end
 
   def filename
@@ -31,21 +70,17 @@ class Editserver
   def filepath
     return tempfile.path if tempfile
 
-    self.tempfile = Tempfile.new sanitize(filename)
-    text          = request.params['text']
+    @tempfile = Tempfile.new sanitize(filename)
+    text      = request.params['text']
 
     # TODO: Why doesn't tempfile.write work here?
     File.open(tempfile.path, 'w') { |f| f.write text } if text
     tempfile.path
   end
 
-  def sanitize str
-    str.gsub /[^\w\. ]+/, '-'
-  end
-
   def call env
-    self.request  = Rack::Request.new env
-    self.response = Rack::Response.new
+    @request  = Rack::Request.new env
+    @response = Rack::Response.new
 
     editor.new.edit filepath
 
@@ -60,5 +95,15 @@ class Editserver
       tempfile.close
       tempfile.unlink
     end
+  end
+
+  private
+
+  def sanitize str
+    str.gsub /[^\w\. ]+/, '-'
+  end
+
+  def pascalize str
+    str.capitalize.gsub(/_+(.)/) { |m| m[1].upcase }
   end
 end
