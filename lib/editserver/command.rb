@@ -7,8 +7,12 @@ class Editserver
   class Command
     def initialize args = []
       @args = args
-
       @opts = { :rcfile => "~/.#{File.basename $0}rc" }
+
+      @editoropts = {
+        'default'  => nil,
+        'terminal' => nil
+      }
 
       @rackopts = {
         :environment => 'development',
@@ -62,6 +66,11 @@ class Editserver
       end
 
       opts
+    end
+
+    # returns dup of @editoropts merged with rcopts
+    def editoropts
+      @editoropts.dup.merge rcopts['editor']
     end
 
     def server

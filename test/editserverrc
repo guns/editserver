@@ -1,5 +1,8 @@
 editor:
-  mate: mate -w
+  terminal: /opt/nerv/bin/rxvt-unicode -r --
+  default:  mate
+  mate:     mate -w
+  bbedit:   bbedit -w
 
 rack:
   port: 8080

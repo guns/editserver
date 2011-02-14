@@ -10,7 +10,6 @@ class Editserver
   # returns Editserver handler based on path
   def editor
     case path = request.path_info[%r(\A/([\w-]+?)\b), 1]
-    when 'vim'  then Editserver::Vim
     else
       raise EditError, "No handler for #{path}"
     end
