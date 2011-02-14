@@ -9,6 +9,8 @@ class Editserver
       @args = args
       @opts = { :rcfile => "~/.#{File.basename $0}rc" }
 
+      # keys are strings because YAML.load returns string keys,
+      # and we are not restricting the keys like @rackopts
       @editoropts = {
         'default'  => nil,
         'terminal' => nil
@@ -43,7 +45,7 @@ class Editserver
           @opts[:rcfile] = File.expand_path arg
         end
 
-        opt.on '--no-rc', "Suppress reading of rc file" do
+        opt.on '--no-rc', 'Suppress reading of rc file' do
           @opts[:norcfile] = true
         end
       end
@@ -87,7 +89,7 @@ class Editserver
       # HACK: Fixed in master -- remove when upgrading min rack dependency
       # http://groups.google.com/group/rack-devel/browse_thread/thread/8f6c3b79c99809ee
       srv = Rack::Server.new rackopts
-      srv.instance_variable_set :@app, Editserver.new
+      srv.instance_variable_set :@app, Editserver.new(editoropts)
       srv
     end
 

@@ -5,6 +5,6 @@ editor:
   bbedit:   bbedit -w
 
 rack:
-  port: 8080
+  port: 9999
 
 # vim: ft=yaml:
