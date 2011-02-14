@@ -1,7 +1,7 @@
 require 'editserver/editor'
 
 class Editserver
-  class Vim < Editor
+  class TerminalVim < Editor
     define_editor *%w[vim --servername editserver --remote-tab-wait]
 
     def server_available?
