@@ -1,6 +1,6 @@
 require 'tempfile'
 require 'rack'
-require 'editserver/vim'
+require 'editserver/terminal/vim'
 
 class Editserver
   class EditError < StandardError; end
