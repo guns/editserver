@@ -1,8 +1,0 @@
-editor:
-  terminal: /opt/nerv/bin/rxvt-unicode -r --
-  default:  mate
-
-rack:
-  port: 9999
-
-# vim: ft=yaml:
