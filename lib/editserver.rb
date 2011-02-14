@@ -8,6 +8,7 @@ class Editserver
   class RoutingError < StandardError; end
 
   GUI_EDITORS = {
+    'mvim'   => 'mvim --nofork --servername EDITSERVER',
     'mate'   => 'mate -w',
     'bbedit' => 'bbedit -w'
   }

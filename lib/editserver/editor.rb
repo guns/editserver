@@ -9,6 +9,7 @@ class Editserver
         bin = %x(which #{editor}).chomp
         raise RuntimeError, "#{editor} not found!" unless File.executable? bin
         @command = [bin, *params]
+        @command << '--' unless @command.last == '--'
       end
     end # self
 
