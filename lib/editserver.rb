@@ -7,12 +7,17 @@ class Editserver
   class EditError < StandardError; end
   class RoutingError < StandardError; end
 
+  GUI_EDITORS = {
+    'mate'   => 'mate -w',
+    'bbedit' => 'bbedit -w'
+  }
+
   attr_accessor :terminal, :editors
 
   def initialize options = {}
     opts      = options.dup
     @terminal = opts.delete 'terminal'
-    register_editors opts
+    register_editors GUI_EDITORS.merge(opts)
   end
 
   # returns Hash of name => EditorClass
