@@ -1,67 +1,80 @@
-require 'tempfile'
+require 'shellwords'
 require 'rack'
-require 'editserver/vim'
-require 'editserver/mate'
+require 'editserver/response'
+require 'editserver/terminal/vim'
 
 class Editserver
   class EditError < StandardError; end
+  class RoutingError < StandardError; end
 
-  attr_accessor :request, :response, :tempfile
+  GUI_EDITORS = {
+    # OS X editors
+    'mvim'   => 'mvim --nofork --servername EDITSERVER',
+    'mate'   => 'mate -w',
+    'bbedit' => 'bbedit -w'
+  }
+
+  attr_accessor :terminal, :editors
+
+  def initialize options = {}
+    opts      = options.dup
+    @terminal = opts.delete 'terminal'
+    register_editors GUI_EDITORS.merge(opts)
+  end
+
+  # returns Hash of name => EditorClass
+  def register_editors opts = {}
+    @editors ||= {}
+
+    if default = opts.delete('default')
+      @editors['default'] = default
+    end
+
+    # rest should be editor definitions
+    opts.each do |name, cmd|
+      klass = pascalize name
+      editor, params = cmd.shellsplit.partition.with_index { |w,i| i.zero? }
+
+      self.class.class_eval %Q(                          # e.g. mate: mate -w
+        class #{klass} < Editor                          # class Mate < Editor
+          define_editor #{editor[0].inspect}, *#{params} #   define_editor 'mate', *['-w']
+        end                                              # end
+      )
+
+      @editors[name] = self.class.const_get klass.to_sym
+    end
+
+    @editors
+  end
 
   # returns Editserver handler based on path
-  def editor
-    case path = request.path_info[%r(\A/([\w-]+?)\b), 1]
-    when 'vim'  then Editserver::Vim
-    when 'mate' then Editserver::Mate
-    else
-      raise EditError, "No handler for #{path}"
+  def editor path_info
+    path = path_info[%r(\A([/\w\.-]+)), 1]
+
+    if klass = editors[path[/\/(.*)/, 1]]
+      klass
+    elsif path == '/'
+      klass = editors[editors['default']]
     end
-  end
 
-  def filename
-    # `id' and `url' sent by TextAid
-    name    = 'editserver'
-    id, url = request.params.values_at 'id', 'url'
-
-    if id or url
-      name << '-' << id  if id
-      name << '-' << url if url
-    else
-      name << '-' << request.env['HTTP_USER_AGENT'].split.first
-    end
-  end
-
-  def filepath
-    return tempfile.path if tempfile
-
-    self.tempfile = Tempfile.new sanitize(filename)
-    text          = request.params['text']
-
-    # TODO: Why doesn't tempfile.write work here?
-    File.open(tempfile.path, 'w') { |f| f.write text } if text
-    tempfile.path
-  end
-
-  def sanitize str
-    str.gsub /[^\w\. ]+/, '-'
+    raise RoutingError, "No handler for #{path}" if klass.nil?
+    klass
   end
 
   def call env
-    self.request  = Rack::Request.new env
-    self.response = Rack::Response.new
+    request = Rack::Request.new env
+    klass   = editor request.path_info
+    Response.new(klass.new, request).call
+  rescue RoutingError => e
+    warn e.to_s
+    res = Rack::Response.new
+    res.status = 500
+    res.finish
+  end
 
-    editor.new.edit filepath
+  private
 
-    response.write File.read(filepath)
-    response.finish
-  rescue EditError => e
-    response.write e.to_s
-    response.status = 500 # server error
-    response.finish
-  ensure
-    if tempfile
-      tempfile.close
-      tempfile.unlink
-    end
+  def pascalize str
+    str.capitalize.gsub(/_+(.)/) { |m| m[1].upcase }
   end
 end

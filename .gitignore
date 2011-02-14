@@ -3,3 +3,5 @@ pkg/*
 .bundle
 Gemfile.lock
 extra/editserver.scpt
+tags
+test/editserverrc
