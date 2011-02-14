@@ -30,7 +30,7 @@ class Editserver
           Options:
         ).gsub /^ +/, ''
 
-        opt.on '-p', '--port NUMBER', Integer, "default: #{@rackopts[:Port]}" do |arg|
+        opt.on '-p', '--port NUMBER', Integer, "default: #{rackopts[:Port]}" do |arg|
           @rackopts[:Port] = arg
         end
 
@@ -38,17 +38,36 @@ class Editserver
                '(Also can be set by exporting EDITSERVERRC to environment)' do |arg|
           @opts[:rcfile] = File.expand_path arg
         end
+
+        opt.on '--no-rc', "Suppress reading of rc file" do
+          @opts[:norcfile] = true
+        end
       end
     end
 
     def rcopts
-      @rcopts ||= YAML.load_file(File.expand_path ENV['EDITSERVERRC'] || @opts[:rcfile])
+      @rcopts ||= if @opts[:norcfile]
+        {}
+      else
+        YAML.load_file File.expand_path(ENV['EDITSERVERRC'] || @opts[:rcfile])
+      end
+    end
+
+    # returns dup of @rackopts masked by rcopts
+    def rackopts
+      (opts = @rackopts.dup).keys.each do |k|
+        v = rcopts['rack'][k.to_s]
+        v = rcopts['rack'][k.to_s.downcase] if v.nil? # be tolerant of lowercase keys
+        opts[k] = v unless v.nil?
+      end
+
+      opts
     end
 
     def server
       # HACK: Fixed in master -- remove when upgrading min rack dependency
       # http://groups.google.com/group/rack-devel/browse_thread/thread/8f6c3b79c99809ee
-      srv = Rack::Server.new @rackopts
+      srv = Rack::Server.new rackopts
       srv.instance_variable_set :@app, Editserver.new
       srv
     end
