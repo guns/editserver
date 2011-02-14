@@ -2,10 +2,12 @@ require 'shellwords'
 require 'fileutils'
 require 'erb'
 require 'bundler'
-require 'editserver/command'
 Bundler::GemHelper.install_tasks
 
 if RUBY_PLATFORM[/darwin/]
+  $:.unshift File.expand_path('../lib', __FILE__)
+  require 'editserver/command'
+
   @cmd = Editserver::Command.new
 
   desc "[PORT=#{@cmd.rackopts[:Port]}] Compile included AppleScript and place in ~/Library/Scripts/"
