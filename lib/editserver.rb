@@ -8,6 +8,7 @@ class Editserver
   class RoutingError < StandardError; end
 
   GUI_EDITORS = {
+    # OS X editors
     'mvim'   => 'mvim --nofork --servername EDITSERVER',
     'mate'   => 'mate -w',
     'bbedit' => 'bbedit -w'
@@ -25,7 +26,6 @@ class Editserver
   def register_editors opts = {}
     @editors ||= {}
 
-    # `default' is a path to redirect to
     if default = opts.delete('default')
       @editors['default'] = default
     end
