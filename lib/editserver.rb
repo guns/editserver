@@ -24,7 +24,7 @@ class Editserver
 
     # seed with terminal-based editors, whose server/client modes are a bit too
     # complicated to configure dynamically
-    @editors  = {
+    @editors = {
       'vim'   => Vim,
       'emacs' => Emacs
     }
