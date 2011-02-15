@@ -5,13 +5,13 @@ class Editserver
     class << self
       attr_accessor :command
 
-      @@terminal = nil
-
       def define_editor editor, *params
         bin = %x(which #{editor}).chomp
         raise RuntimeError, "#{editor} not found!" unless File.executable? bin
         @command = [bin, *params]
       end
+
+      @@terminal = nil
 
       def terminal
         @@terminal
@@ -21,6 +21,10 @@ class Editserver
         @@terminal = str.shellsplit if str.is_a? String
       end
     end # self
+
+    def terminal
+      @@terminal
+    end
 
     def edit file
       out = %x(#{[*self.class.command, file].shelljoin} 2>&1).chomp
