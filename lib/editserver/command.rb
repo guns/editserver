@@ -59,7 +59,7 @@ class Editserver
     def rcopts
       @rcopts ||= begin
         empty  = { 'rack' => {}, 'editor' => {} }
-        rcfile = ENV['EDITSERVERRC'] || @opts[:rcfile]
+        rcfile = File.expand_path ENV['EDITSERVERRC'] || @opts[:rcfile]
 
         if @opts[:norcfile]
           empty
