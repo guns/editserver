@@ -9,9 +9,22 @@ class Editserver
         bin = %x(which #{editor}).chomp
         raise RuntimeError, "#{editor} not found!" unless File.executable? bin
         @command = [bin, *params]
-        @command << '--' unless @command.last == '--'
+      end
+
+      @@terminal = nil
+
+      def terminal
+        @@terminal
+      end
+
+      def terminal= str
+        @@terminal = str.shellsplit if str.is_a? String
       end
     end # self
+
+    def terminal
+      @@terminal
+    end
 
     def edit file
       out = %x(#{[*self.class.command, file].shelljoin} 2>&1).chomp

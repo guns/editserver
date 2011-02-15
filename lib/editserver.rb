@@ -2,6 +2,7 @@ require 'shellwords'
 require 'rack'
 require 'editserver/response'
 require 'editserver/terminal/vim'
+require 'editserver/terminal/emacs'
 
 class Editserver
   class EditError < StandardError; end
@@ -9,23 +10,30 @@ class Editserver
 
   GUI_EDITORS = {
     # OS X editors
-    'mvim'   => 'mvim --nofork --servername EDITSERVER',
     'mate'   => 'mate -w',
-    'bbedit' => 'bbedit -w'
+    'mvim'   => 'mvim --nofork --servername EDITSERVER', # does not return when app must be launched
+    'kod'    => 'open -a Kod -W',                        # app must quit to release control
+    'bbedit' => 'bbedit -w'                              # does not open file properly when app is launched
   }
 
   attr_accessor :terminal, :editors
 
   def initialize options = {}
-    opts      = options.dup
-    @terminal = opts.delete 'terminal'
+    opts            = options.dup
+    Editor.terminal = opts.delete 'terminal'
+
+    # seed with terminal-based editors, whose server/client modes are a bit too
+    # complicated to configure dynamically
+    @editors = {
+      'vim'   => Vim,
+      'emacs' => Emacs
+    }
+
     register_editors GUI_EDITORS.merge(opts)
   end
 
   # returns Hash of name => EditorClass
   def register_editors opts = {}
-    @editors ||= {}
-
     if default = opts.delete('default')
       @editors['default'] = default
     end

@@ -40,8 +40,13 @@ class Editserver
           @rackopts[:Port] = arg
         end
 
+        opt.on '-t', '--terminal CMD', 'Terminal to launch for console editors' do |arg|
+          @editoropts['terminal'] = arg
+        end
+
         opt.on '--rc PATH', "Path to rc file; #{@opts[:rcfile]} by default",
                '(Also can be set by exporting EDITSERVERRC to environment)' do |arg|
+          @rcopts = nil # reset cached user opts
           @opts[:rcfile] = File.expand_path arg
         end
 

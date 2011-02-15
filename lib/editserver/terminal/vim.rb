@@ -1,23 +1,24 @@
 require 'editserver/editor'
 
 class Editserver
-  module Terminal
-    class Vim < Editor
-      define_editor *%w[vim --servername editserver --remote-tab-wait]
+  class Vim < Editor
+    define_editor *%w[vim --servername EDITSERVER --remote-tab-wait]
 
-      def server_available?
-        %x(vim --serverlist).split("\n").map { |l| l.strip.downcase }.include? 'editserver'
-      end
+    def server_available?
+      %x(vim --serverlist).split("\n").map { |l| l.strip.upcase }.include? 'EDITSERVER'
+    end
 
-      # FIXME: this shouldn't be hard-coded
-      def open_term
-        pid = fork { exec '/opt/nerv/bin/rxvt-unicode -r -- -e vim --servername editserver' }
-        sleep 2 # HACK
-        Process.detach pid
-      end
+    def start_server
+      pid = fork { exec *terminal, *%w[-e vim --servername EDITSERVER] }
+      sleep 2 # HACK: a moment to initialize before returning
+      Process.detach pid
+    end
 
-      def edit file
-        open_term unless server_available?
+    def edit file
+      if terminal.nil?
+        File.open(file, 'w') { |f| f.write 'No terminal defined!' }
+      else
+        start_server unless server_available?
         super
       end
     end
