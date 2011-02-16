@@ -24,6 +24,7 @@ describe Editserver::Editor do
 
     describe :@@terminal do
       it "should have a reader and writer for the metaclass's @@terminal" do
+        @klass.terminal = nil
         @klass.terminal.must_equal nil
         @klass.terminal = 'xterm -fg white -bg black'
         @klass.terminal.must_equal %w[xterm -fg white -bg black]

@@ -6,7 +6,6 @@ require 'minitest/pride' if $stdout.tty?
 require 'minitest/autorun'
 require 'editserver'
 require 'editserver/version'
-require 'editserver/command'
 
 describe Editserver do
   describe :VERSION do

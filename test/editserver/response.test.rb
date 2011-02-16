@@ -1,6 +1,7 @@
 $:.unshift File.expand_path('../../lib', __FILE__)
 
 require 'rack/mock'
+require 'editserver/editor'
 require 'editserver/response'
 require 'minitest/pride' if $stdout.tty?
 require 'minitest/autorun'
