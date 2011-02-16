@@ -3,17 +3,41 @@ require 'rack/response'
 
 class Editserver
   class Response
-    attr_reader :editor, :request, :response, :tempfile
+    attr_reader :editor, :request, :response
 
     def initialize editor, request
       @editor   = editor
       @request  = request
       @response = Rack::Response.new
-      @tempfile = Tempfile.new filename
+    end
 
-      # TODO: Why doesn't tempfile.write work here?
-      text = request.params['text']
-      File.open(tempfile.path, 'w') { |f| f.write text } if text
+    def call
+      tempfile = mktemp
+      editor.edit tempfile.path
+      response.write File.read(tempfile.path)
+      response.finish
+    rescue EditError => e
+      response.write e.to_s
+      response.status = 500 # server error
+      response.finish
+    ensure
+      if tempfile
+        tempfile.close
+        tempfile.unlink
+      end
+    end
+
+    private
+
+    def mktemp
+      file = Tempfile.new filename
+
+      if text = request.params['text']
+        file.write text
+        file.rewind
+      end
+
+      file
     end
 
     def filename
@@ -30,22 +54,7 @@ class Editserver
         end
       end
 
-      name.gsub /[^\w\. ]+/, '-'
-    end
-
-    def call
-      editor.edit tempfile.path
-      response.write File.read(tempfile.path)
-      response.finish
-    rescue EditError => e
-      response.write e.to_s
-      response.status = 500 # server error
-      response.finish
-    ensure
-      if tempfile
-        tempfile.close
-        tempfile.unlink
-      end
+      name.gsub /[^\w\.]+/, '-'
     end
   end
 end
