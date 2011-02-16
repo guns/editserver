@@ -2,12 +2,19 @@ $:.unshift File.expand_path('../../lib', __FILE__)
 $:.unshift File.dirname(__FILE__)
 
 require 'rack/mock'
-require 'editserver'
-require 'editserver/command'
 require 'minitest/pride' if $stdout.tty?
 require 'minitest/autorun'
+require 'editserver'
+require 'editserver/version'
+require 'editserver/command'
 
 describe Editserver do
+  describe :VERSION do
+    it 'should have a VERSION constant' do
+      Editserver::VERSION.must_match /\d+\.\d+\.\d+/
+    end
+  end
+
   describe :ErrorClasses do
     it 'should have some custom error classes' do
       Editserver::EditError.new.must_be_kind_of StandardError
