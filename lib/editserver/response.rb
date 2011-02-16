@@ -3,35 +3,16 @@ require 'rack/response'
 
 class Editserver
   class Response
-    attr_reader :editor, :request, :response, :tempfile
+    attr_reader :editor, :request, :response
 
     def initialize editor, request
       @editor   = editor
       @request  = request
       @response = Rack::Response.new
-      @tempfile = Tempfile.new filename
-
-      # TODO: Why doesn't tempfile.write work here?
-      text = request.params['text']
-      File.open(tempfile.path, 'w') { |f| f.write text } if text
-    end
-
-    def filename
-      # `id' and `url' sent by TextAid
-      name    = 'editserver'
-      id, url = request.params.values_at 'id', 'url'
-
-      if id or url
-        name << '-' << id  if id
-        name << '-' << url if url
-      else
-        name << '-' << request.env['HTTP_USER_AGENT'].split.first
-      end
-
-      name.gsub /[^\w\. ]+/, '-'
     end
 
     def call
+      tempfile = mktemp
       editor.edit tempfile.path
       response.write File.read(tempfile.path)
       response.finish
@@ -44,6 +25,36 @@ class Editserver
         tempfile.close
         tempfile.unlink
       end
+    end
+
+    private
+
+    def mktemp
+      file = Tempfile.new filename
+
+      if text = request.params['text']
+        file.write text
+        file.rewind
+      end
+
+      file
+    end
+
+    def filename
+      # `id' and `url' sent by TextAid
+      name    = 'editserver'
+      id, url = request.params.values_at 'id', 'url'
+
+      if id or url
+        name << '-' << id  if id
+        name << '-' << url if url
+      else
+        if agent = request.env['HTTP_USER_AGENT']
+          name << '-' << agent.split.first
+        end
+      end
+
+      name.gsub /[^\w\.]+/, '-'
     end
   end
 end

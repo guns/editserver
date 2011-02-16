@@ -7,7 +7,7 @@ class Editserver
   class Command
     def initialize args = []
       @args = args
-      @opts = { :rcfile => "~/.#{File.basename $0}rc" }
+      @opts = { :rcfile => "~/.editserverrc" }
 
       # keys are strings because YAML.load returns string keys,
       # and we are not restricting the keys like @rackopts
@@ -65,6 +65,7 @@ class Editserver
           empty
         elsif File.exists? rcfile
           opts = YAML.load_file File.expand_path rcfile
+          opts           ||= {}
           opts['rack']   ||= {}
           opts['editor'] ||= {}
           opts

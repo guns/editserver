@@ -16,8 +16,10 @@ class Editserver
     'bbedit' => 'bbedit -w'                              # does not open file properly when app is launched
   }
 
-  attr_accessor :terminal, :editors
+  attr_reader :editors
 
+  # TODO: We are playing with global constants here;
+  #       this is simple, but we should stop
   def initialize options = {}
     opts            = options.dup
     Editor.terminal = opts.delete 'terminal'
@@ -33,7 +35,9 @@ class Editserver
   end
 
   # returns Hash of name => EditorClass
-  def register_editors opts = {}
+  def register_editors options = {}
+    opts = options.dup
+
     if default = opts.delete('default')
       @editors['default'] = default
     end
@@ -83,6 +87,6 @@ class Editserver
   private
 
   def pascalize str
-    str.capitalize.gsub(/_+(.)/) { |m| m[1].upcase }
+    str.capitalize.gsub(/[_-]+(.)/) { |m| m[1].upcase }
   end
 end

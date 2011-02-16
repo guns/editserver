@@ -4,6 +4,13 @@ require 'erb'
 require 'bundler'
 Bundler::GemHelper.install_tasks
 
+task :default => :test
+
+desc 'Run all tests'
+task :test do
+  Dir['test/**/*.test.rb'].each { |f| load f }
+end
+
 if RUBY_PLATFORM[/darwin/]
   $:.unshift File.expand_path('../lib', __FILE__)
   require 'editserver/command'
