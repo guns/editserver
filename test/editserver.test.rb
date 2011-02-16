@@ -85,7 +85,8 @@ describe Editserver do
 
     it 'should create new subclasses of Editor, and place them in the @editors Hash' do
       @srv.register_editors 'kitty_kitty' => 'cat --here-kitty-kitty'
-      Editserver.constants.must_include :KittyKitty
+      const = Editserver.constants.first.is_a?(String) ? 'KittyKitty' : :KittyKitty
+      Editserver.constants.must_include const
       @srv.editors['kitty_kitty'].must_equal Editserver::KittyKitty
     end
 

@@ -87,6 +87,6 @@ class Editserver
   private
 
   def pascalize str
-    str.capitalize.gsub(/[_-]+(.)/) { |m| m[1].upcase }
+    str.capitalize.gsub(/[_-]+(.)/) { |m| m[1].chr.upcase }
   end
 end
