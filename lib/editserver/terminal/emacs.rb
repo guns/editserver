@@ -5,7 +5,7 @@ class Editserver
     define_editor *%w[emacsclient --alternate-editor='']
 
     def start_server
-      pid = fork { exec *terminal, *%w[-e emacs --eval (server-start)] }
+      pid = fork { exec *(terminal + %w[-e emacs --eval (server-start)]) }
       sleep 2 # HACK!
       Process.detach pid
     end

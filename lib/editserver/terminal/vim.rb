@@ -9,7 +9,7 @@ class Editserver
     end
 
     def start_server
-      pid = fork { exec *terminal, *%w[-e vim --servername EDITSERVER] }
+      pid = fork { exec *(terminal + %w[-e vim --servername EDITSERVER]) }
       sleep 2 # HACK: a moment to initialize before returning
       Process.detach pid
     end

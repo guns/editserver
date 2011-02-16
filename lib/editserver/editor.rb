@@ -35,7 +35,7 @@ class Editserver
         return
       end
 
-      out = %x(#{[*cmd, file].shelljoin} 2>&1).chomp
+      out = %x(#{(cmd + [file]).shelljoin} 2>&1).chomp
 
       if $?.exitstatus.zero?
         out
