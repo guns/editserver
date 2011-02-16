@@ -9,8 +9,20 @@
 
                                              guns <sung@metablu.com>
 
-TODO
-----
 
- * Improve applescript situation
- * X client
+# Your favorite editor, as a local web service!
+
+For use with [Textaid][1], on OS X with included applescript, or with any other
+http client.
+
+Everything works, and core tests are in place. More information forthcoming.
+
+
+### TODO
+
+ * Finish remaining tests
+ * Improve applescript reliability
+ * Clean up `Editserver::` namespace
+
+
+[1]: https://chrome.google.com/webstore/detail/ppoadiihggafnhokfkpphojggcdigllp
