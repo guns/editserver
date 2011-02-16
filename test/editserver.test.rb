@@ -118,6 +118,35 @@ describe Editserver do
   end
 
   describe :call do
-    # let's cheat a little and just use Editserver::Command
+    before do
+      bin      = File.expand_path '../test-editor', __FILE__
+      @srv     = Editserver.new 'default' => 'test-editor', 'test-editor' => bin
+      @env_for = Rack::MockRequest.method :env_for
+      @uri     = 'http://127.0.0.1:9999'
+
+      # don't clutter test output
+      $stderr.reopen '/dev/null'
+    end
+
+    after { $stderr.reopen STDERR }
+
+    it 'should take a rack env hash' do
+      @srv.method(:call).arity.must_equal 1
+      lambda { @srv.call :foo => 'bar' }.must_raise NoMethodError
+    end
+
+    it 'should return a rack array' do
+      res = @srv.call @env_for.call(@uri)
+      res.must_be_kind_of Array
+      res.length.must_equal 3
+      res[0].must_be_kind_of Fixnum
+      res[1].must_be_kind_of Hash
+      res[2].must_be_kind_of Rack::Response
+    end
+
+    it 'should spawn the specified editor and return an edited string' do
+      @srv.call(@env_for.call @uri)[2].body.join.must_match /test-editor\z/
+      @srv.call(@env_for.call @uri + '/?text=foobarbaz')[2].body.join.must_match /\Afoobarbaz.*test-editor\z/m
+    end
   end
 end
