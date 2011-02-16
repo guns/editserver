@@ -60,7 +60,7 @@ describe Editserver::Editor do
         end
       end
 
-      Editserver::MysteryPony.new.edit @file
+      Editserver::MysteryPony.new.edit @file.path
       @file.read.must_match /not found:/
     end
 

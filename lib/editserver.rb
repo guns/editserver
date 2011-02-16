@@ -47,10 +47,10 @@ class Editserver
       klass = pascalize name
       editor, params = cmd.shellsplit.partition.with_index { |w,i| i.zero? }
 
-      self.class.class_eval %Q(                          # e.g. mate: mate -w
-        class #{klass} < Editor                          # class Mate < Editor
-          define_editor #{editor[0].inspect}, *#{params} #   define_editor 'mate', *['-w']
-        end                                              # end
+      self.class.class_eval %Q(                                  # e.g. mate: mate -w
+        class #{klass} < Editor                                  # class Mate < Editor
+          define_editor #{editor[0].inspect}, *#{params.inspect} #   define_editor 'mate', *['-w']
+        end                                                      # end
       )
 
       @editors[name] = self.class.const_get klass.to_sym
@@ -87,6 +87,6 @@ class Editserver
   private
 
   def pascalize str
-    str.capitalize.gsub(/[_-]+(.)/) { |m| m[1].upcase }
+    str.capitalize.gsub(/[_-]+(.)/) { |m| m[1].chr.upcase }
   end
 end
