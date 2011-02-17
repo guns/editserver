@@ -1,5 +1,6 @@
 require 'optparse'
 require 'yaml'
+require 'webrick/log'
 require 'rack'
 require 'editserver'
 
@@ -17,12 +18,13 @@ class Editserver
       }
 
       @rackopts = {
-        :environment => 'development',
-        :pid         => nil,
-        :Port        => 9999,
         :Host        => '127.0.0.1',
-        :AccessLog   => [],
-        :config      => ''
+        :Port        => 9999,
+        :Logger      => WEBrick::Log.new(nil, WEBrick::BasicLog::WARN), # be less chatty
+        :AccessLog   => [], # rack does its own access logging, so keep this blank
+        :pid         => nil,
+        :config      => '',
+        :environment => 'deployment'
       }
     end
 
@@ -64,7 +66,7 @@ class Editserver
         if @opts[:norcfile]
           empty
         elsif File.exists? rcfile
-          opts = YAML.load_file File.expand_path rcfile
+          opts = YAML.load_file File.expand_path(rcfile)
           opts           ||= {}
           opts['rack']   ||= {}
           opts['editor'] ||= {}
@@ -102,7 +104,31 @@ class Editserver
     def run
       options.parse @args
       $0 = 'editserver'
+      puts banner
       server.start
+    ensure
+      puts fx("\nGoodbye!", [32,1])
+    end
+
+    private
+
+    def banner
+      %Q(\
+                 __      __
+                /\\ \\  __/\\ \\__
+           __   \\_\\ \\/\\_\\ \\ ,_\\   ____     __   _ __   __  __     __   _ __
+         /'__`\\ /'_` \\/\\ \\ \\ \\/  /',__\\  /'__`\\/\\`'__\\/\\ \\/\\ \\  /'__`\\/\\`'__\\
+        /\\  __//\\ \\L\\ \\ \\ \\ \\ \\_/\\__, `\\/\\  __/\\ \\ \\/ \\ \\ \\_/ |/\\  __/\\ \\ \\/
+        \\ \\____\\ \\___,_\\ \\_\\ \\__\\/\\____/\\ \\____\\\\ \\_\\  \\ \\___/ \\ \\____\\\\ \\_\\
+         \\/____/\\/__,_ /\\/_/\\/__/\\/___/  \\/____/ \\/_/   \\/__/   \\/____/ \\/_/
+
+        Listening on #{fx "#{rackopts[:Host]}:#{rackopts[:Port]}", [32,1]}\
+      ).gsub(/^ {8}/, '')
+    end
+
+    def fx str, effects = []
+      return str unless $stdout.tty?
+      str.gsub /^(.*)$/, "\e[#{[effects].flatten.join ';'}m\\1\e[0m"
     end
   end
 end

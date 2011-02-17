@@ -16,7 +16,7 @@ describe Editserver::Command do
       cmd.instance_variable_get(:@opts).must_equal(:rcfile => '~/.editserverrc')
       cmd.instance_variable_get(:@editoropts).must_equal('default' => nil, 'terminal' => nil)
       cmd.instance_variable_get(:@rackopts).keys.sort_by(&:to_s).must_equal [
-        :environment, :pid, :Port, :Host, :AccessLog, :config
+        :Host, :Port, :Logger, :AccessLog, :pid, :config, :environment
       ].sort_by &:to_s
     end
   end
