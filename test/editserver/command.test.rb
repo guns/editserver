@@ -49,6 +49,9 @@ describe Editserver::Command do
       @cmd.instance_variable_get(:@rackopts)[:Logger].level.must_equal WEBrick::BasicLog::FATAL - 1
       @cmd.instance_variable_get(:@rackopts)[:environment].must_equal 'none'
 
+      @cmd.options.parse %w[--default mate]
+      @cmd.instance_variable_get(:@editoropts)['default'].must_equal 'mate'
+
       @cmd.options.parse %w[--terminal xterm]
       @cmd.instance_variable_get(:@editoropts)['terminal'].must_equal 'xterm'
 

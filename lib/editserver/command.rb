@@ -40,12 +40,17 @@ class Editserver
           Options:
         ).gsub /^ +/, ''
 
-        opt.on '-H', '--host HOST', "IP/Hostname to bind to; #{@opts[:Host]} by default" do |arg|
+        opt.on '-H', '--host HOST', "IP/Hostname to bind to; #{rackopts[:Host]} by default" do |arg|
           @rackopts[:Host] = arg
         end
 
-        opt.on '-P', '--port NUMBER', Integer, "default: #{rackopts[:Port]}" do |arg|
+        opt.on '-P', '--port NUMBER', Integer, "Port to bind; #{rackopts[:Port]} by default" do |arg|
           @rackopts[:Port] = arg
+        end
+
+        opt.on '-d', '--default EDITOR', 'Editor to launch at root path; May be one of:',
+               (Editserver.new(editoropts).editors.keys - ['default']).join(', ') do |arg|
+          @editoropts['default'] = arg
         end
 
         opt.on '-t', '--terminal CMD', 'Terminal to launch for console editors' do |arg|
@@ -73,7 +78,7 @@ class Editserver
         end
 
         # normally implicit, but must be explicit when having an option beginning with `h'
-        opt.on '-h', '--help' do
+        opt.on_tail '-h', '--help' do
           puts opt; exit
         end
       end
