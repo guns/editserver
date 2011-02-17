@@ -13,7 +13,7 @@ class Editserver
     'mate'   => 'mate -w',
     'mvim'   => 'mvim --nofork --servername EDITSERVER', # does not return when app must be launched
     'bbedit' => 'bbedit -w'                              # does not open file properly when app is launched
-  }.select { |k,v| File.executable? %x(which #{k.shellsplit[0]}).chomp }
+  }.reject { |k,v| not File.executable? %x(which #{k.shellsplit[0]}).chomp }
 
   attr_reader :editors
 

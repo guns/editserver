@@ -20,7 +20,6 @@ Everything works, and core tests are in place. More information forthcoming.
 
 ### TODO
 
- * Daemon mode
  * Improve applescript reliability
  * Avoid dynamic creation of Editor subclasses in `Editserver::` namespace
    (a consequence of an earlier design decision)
