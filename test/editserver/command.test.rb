@@ -2,6 +2,7 @@ $:.unshift File.expand_path('../../lib', __FILE__)
 
 require 'tempfile'
 require 'yaml'
+require 'rack/server'
 require 'editserver/command'
 require 'minitest/pride' if $stdout.tty?
 require 'minitest/autorun'
@@ -109,8 +110,54 @@ describe Editserver::Command do
   end
 
   describe :server do
+    it 'should return an instance of Rack::Server' do
+      @cmd.server.must_be_kind_of Rack::Server
+    end
+
+    it 'should pass rack options to new server instance' do
+      @cmd.rcopts['rack']['port'] = 4000
+      @cmd.server.options[:Port].must_equal 4000
+      @cmd.rcopts['rack']['pid'] = '/dev/null'
+      @cmd.server.options[:pid].must_equal '/dev/null'
+    end
+
+    it "should set the server's @app to an instance of Editserver" do
+      @cmd.server.app.must_be_kind_of Editserver
+    end
   end
 
   describe :run do
+    before { @rd, @wr = IO.pipe }
+
+    it 'should parse the arguments stored in @args' do
+      @cmd.instance_variable_set :@args, ['--help']
+
+      pid = fork do
+        @rd.close
+        $stdout.reopen @wr
+        @cmd.run
+      end
+
+      @wr.close
+      Process.wait2(pid).last.exitstatus.must_equal 0
+      @rd.read.must_match /Usage:.*--help/m
+    end
+
+    it 'should start the server, and shutdown on SIGINT' do
+      pid = fork do
+        @rd.close
+        $stdout.reopen @wr
+        @cmd.run
+      end
+
+      @wr.close
+
+      # data on pipe means the server is done initializing
+      if IO.select [@rd]
+        Process.kill :INT, pid
+        Process.wait pid
+        @rd.read.must_match /Listening.*#{@cmd.rackopts[:Host]}:#{@cmd.rackopts[:Port]}/
+      end
+    end
   end
 end
