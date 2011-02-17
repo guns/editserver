@@ -12,9 +12,8 @@ class Editserver
     # OS X editors
     'mate'   => 'mate -w',
     'mvim'   => 'mvim --nofork --servername EDITSERVER', # does not return when app must be launched
-    'kod'    => 'open -a Kod -W',                        # app must quit to release control
     'bbedit' => 'bbedit -w'                              # does not open file properly when app is launched
-  }
+  }.select { |k,v| File.executable? %x(which #{k.shellsplit[0]}).chomp }
 
   attr_reader :editors
 
