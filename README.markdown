@@ -22,7 +22,10 @@ Everything works, and core tests are in place. More information forthcoming.
 
  * Finish remaining tests
  * Improve applescript reliability
- * Clean up `Editserver::` namespace
+ * Avoid dynamic creation of Editor subclasses in `Editserver::` namespace
+   (a consequence of an earlier design decision)
+ * Daemon mode
+ * Special case: OS X's `Terminal.app` as `editor['terminal']`
 
 
 [1]: https://chrome.google.com/webstore/detail/ppoadiihggafnhokfkpphojggcdigllp
