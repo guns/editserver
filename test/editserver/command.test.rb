@@ -1,11 +1,14 @@
 $:.unshift File.expand_path('../../lib', __FILE__)
+$:.unshift File.dirname(__FILE__)
 
 require 'tempfile'
 require 'yaml'
+require 'webrick/log'
 require 'rack/server'
 require 'editserver/command'
 require 'minitest/pride' if $stdout.tty?
 require 'minitest/autorun'
+require 'socket-test'
 
 describe Editserver::Command do
   before { @cmd = Editserver::Command.new ['--no-rc'] }
@@ -20,7 +23,7 @@ describe Editserver::Command do
       @cmd.instance_variable_get(:@opts).must_equal(:rcfile => '~/.editserverrc')
       @cmd.instance_variable_get(:@editoropts).must_equal('default' => nil, 'terminal' => nil)
       @cmd.instance_variable_get(:@rackopts).keys.sort_by(&:to_s).must_equal [
-        :Host, :Port, :Logger, :AccessLog, :pid, :config, :environment
+        :Host, :Port, :Logger, :AccessLog, :pid, :config, :daemonize, :environment
       ].sort_by(&:to_s)
     end
   end
@@ -36,6 +39,10 @@ describe Editserver::Command do
 
       @cmd.options.parse %w[--port 1000]
       @cmd.instance_variable_get(:@rackopts)[:Port].must_equal 1000
+
+      @cmd.options.parse %w[--fork]
+      @cmd.instance_variable_get(:@rackopts)[:daemonize].must_equal true
+      @cmd.instance_variable_get(:@rackopts)[:pid].must_equal "/tmp/#{File.basename $0}/#{File.basename $0}.pid"
 
       @cmd.options.parse %w[--quiet]
       @cmd.instance_variable_get(:@opts)[:quiet].must_equal true
@@ -140,37 +147,98 @@ describe Editserver::Command do
   end
 
   describe :run do
-    before { @rd, @wr = IO.pipe }
-
     it 'should parse the arguments stored in @args' do
       @cmd.instance_variable_set :@args, ['--help']
 
+      rd, wr = IO.pipe
+
       pid = fork do
-        @rd.close
-        $stdout.reopen @wr
+        rd.close
+        $stdout.reopen wr
         @cmd.run
       end
 
-      @wr.close
+      wr.close
       Process.wait2(pid).last.exitstatus.must_equal 0
-      @rd.read.must_match /Usage:.*--help/m
+      rd.read.must_match /Usage:.*--help/m
     end
 
-    it 'should start the server, and shutdown on SIGINT' do
-      pid = fork do
-        @rd.close
-        $stdout.reopen @wr
-        @cmd.run
+    it 'should start the server, and shutdown on SIGINT and SIGTERM' do
+      # thread, because we don't want to serially boot two servers
+      pool = []
+      [[:INT, 10000], [:TERM, 10001]].each do |sig, port|
+        pool << Thread.new do
+          cmd    = @cmd.dup
+          rd, wr = IO.pipe
+
+          cmd.instance_variable_get(:@rackopts)[:Port] = port
+
+          pid = fork do
+            rd.close
+            $stdout.reopen wr
+            cmd.run
+          end
+
+          wr.close
+
+          sleep 0.1 until SocketTest.open? cmd.rackopts[:Host], port
+
+          Process.kill sig, pid
+
+          # give the server some time to shutdown
+          tries = 0
+          until Process.wait pid, Process::WNOHANG
+            sleep 0.1
+            # but no more than 2 seconds
+            Process.kill :KILL, pid if (tries += 1) > 20
+          end
+
+          (tries <= 20).must_equal true
+          rd.read.must_match /Listening.*#{cmd.rackopts[:Host]}:#{port}/
+        end
       end
 
-      @wr.close
+      pool.each &:join
+    end
 
-      # data on pipe means the server is done initializing
-      if IO.select [@rd]
+    it 'should daemonize and write pidfile in daemon mode' do
+      @cmd.options.parse ['--fork', '--port=10002']
+
+      begin
+        bgpid = fork do
+          $stdout.reopen '/dev/null' # we're not too interested in this output
+          @cmd.run
+        end
+
+        sleep 0.1 until SocketTest.open? @cmd.rackopts[:Host], @cmd.rackopts[:Port]
+        Process.wait bgpid
+
+        pidfile = @cmd.rackopts[:pid]
+        pidbuf  = File.read pidfile
+        pid     = pidbuf.to_i
+
+        pidbuf.must_match /\A\d+\z/       # does it look like a pid?
+        Process.kill(0, pid).must_equal 1 # is it really alive?
+      ensure
+        # make sure the sucker dies
         Process.kill :INT, pid
-        Process.wait pid
-        @rd.read.must_match /Listening.*#{@cmd.rackopts[:Host]}:#{@cmd.rackopts[:Port]}/
+        tries = 0
+        loop do
+          begin
+            Process.kill 0, pid
+            sleep 0.1
+          rescue Errno::ESRCH
+            break
+          end
+          if (tries += 1) > 20
+            Process.kill :KILL, pid
+            break
+          end
+        end
+        (tries <= 20).must_equal true
       end
+
+      File.exists?(@cmd.rackopts[:pid]).must_equal false
     end
   end
 end

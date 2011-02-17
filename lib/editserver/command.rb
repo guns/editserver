@@ -1,4 +1,5 @@
 require 'optparse'
+require 'fileutils'
 require 'yaml'
 require 'webrick/log'
 require 'rack'
@@ -24,6 +25,7 @@ class Editserver
         :AccessLog   => [], # rack does its own access logging, so keep this blank
         :pid         => nil,
         :config      => '',
+        :daemonize   => false,
         :environment => 'deployment'
       }
     end
@@ -48,6 +50,11 @@ class Editserver
 
         opt.on '-t', '--terminal CMD', 'Terminal to launch for console editors' do |arg|
           @editoropts['terminal'] = arg
+        end
+
+        opt.on '-f', '--fork', 'Fork and daemonize; returns pid of daemon' do
+          @rackopts[:daemonize] = true
+          @rackopts[:pid]       = "/tmp/#{File.basename $0}/#{File.basename $0}.pid"
         end
 
         opt.on '-q', '--quiet', 'Produce no output' do
@@ -121,13 +128,28 @@ class Editserver
 
     def run
       options.parse @args
+      $0 = 'editserver'
 
-      begin
-        $0 = 'editserver'
-        puts banner
-        server.start
-      ensure
-        puts fx("\nGoodbye!", [32,1])
+      # Rack::Server issues shutdown on SIGINT only
+      trap :TERM do
+        trap :TERM, 'DEFAULT'
+        Process.kill :INT, $$
+      end
+
+      if rackopts[:daemonize]
+        FileUtils.mkdir_p File.dirname(rackopts[:pid])
+        Process.wait fork { server.start }
+        sleep 0.1 until File.exists? rackopts[:pid] and File.read(rackopts[:pid]).to_i > 0
+
+        say host_and_port
+        say "Editserver PID: #{fx File.read(rackopts[:pid]), [36,1]}"
+      else
+        begin
+          say banner
+          server.start
+        ensure
+          say fx("\nGoodbye!", [32,1])
+        end
       end
     end
 
