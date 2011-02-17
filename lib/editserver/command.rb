@@ -103,11 +103,14 @@ class Editserver
 
     def run
       options.parse @args
-      $0 = 'editserver'
-      puts banner
-      server.start
-    ensure
-      puts fx("\nGoodbye!", [32,1])
+
+      begin
+        $0 = 'editserver'
+        puts banner
+        server.start
+      ensure
+        puts fx("\nGoodbye!", [32,1])
+      end
     end
 
     private
