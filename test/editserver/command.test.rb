@@ -37,6 +37,11 @@ describe Editserver::Command do
       @cmd.options.parse %w[--port 1000]
       @cmd.instance_variable_get(:@rackopts)[:Port].must_equal 1000
 
+      @cmd.options.parse %w[--quiet]
+      @cmd.instance_variable_get(:@opts)[:quiet].must_equal true
+      @cmd.instance_variable_get(:@rackopts)[:Logger].level.must_equal WEBrick::BasicLog::FATAL - 1
+      @cmd.instance_variable_get(:@rackopts)[:environment].must_equal 'none'
+
       @cmd.options.parse %w[--terminal xterm]
       @cmd.instance_variable_get(:@editoropts)['terminal'].must_equal 'xterm'
 
@@ -45,6 +50,14 @@ describe Editserver::Command do
 
       @cmd.options.parse %w[--no-rc]
       @cmd.instance_variable_get(:@opts)[:norcfile].must_equal true
+    end
+  end
+
+  describe :say do
+    it 'should write to $stdout unless --quiet option is specified' do
+      capture_io { @cmd.say 'AHHHHHH!' }.first.must_equal "AHHHHHH!\n"
+      @cmd.instance_variable_get(:@opts)[:quiet] = true
+      capture_io { @cmd.say 'AHHHHHH!' }.first.must_equal ''
     end
   end
 

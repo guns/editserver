@@ -50,6 +50,12 @@ class Editserver
           @editoropts['terminal'] = arg
         end
 
+        opt.on '-q', '--quiet', 'Produce no output' do
+          @opts[:quiet]           = true
+          @rackopts[:Logger]      = WEBrick::Log.new nil, WEBrick::BasicLog::FATAL - 1 # zero, essentially
+          @rackopts[:environment] = 'none'
+        end
+
         opt.on '--rc PATH', "Path to rc file; #{@opts[:rcfile]} by default" do |arg|
           @rcopts = nil # reset cached user opts
           @opts[:rcfile] = File.expand_path arg
@@ -64,6 +70,10 @@ class Editserver
           puts opt; exit
         end
       end
+    end
+
+    def say str
+      puts str unless @opts[:quiet]
     end
 
     def rcopts
@@ -133,8 +143,13 @@ class Editserver
         \\ \\____\\ \\___,_\\ \\_\\ \\__\\/\\____/\\ \\____\\\\ \\_\\  \\ \\___/ \\ \\____\\\\ \\_\\
          \\/____/\\/__,_ /\\/_/\\/__/\\/___/  \\/____/ \\/_/   \\/__/   \\/____/ \\/_/
 
-        Listening on #{fx "#{rackopts[:Host]}:#{rackopts[:Port]}", [32,1]}\
+        #{host_and_port}
+        Press #{fx 'Ctrl-C', [36,1]} to exit.\
       ).gsub(/^ {8}/, '')
+    end
+
+    def host_and_port
+      "Listening on #{fx "#{rackopts[:Host]}:#{rackopts[:Port]}", [32,1]}"
     end
 
     def fx str, effects = []

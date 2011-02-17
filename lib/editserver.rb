@@ -78,8 +78,8 @@ class Editserver
     klass   = editor request.path_info
     Response.new(klass.new, request).call
   rescue RoutingError => e
-    warn e.to_s
     res = Rack::Response.new
+    res.write e.to_s
     res.status = 500
     res.finish
   end
