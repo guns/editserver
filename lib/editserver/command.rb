@@ -44,7 +44,7 @@ class Editserver
           @rackopts[:Host] = arg
         end
 
-        opt.on '-P', '--port NUMBER', Integer, "Port to bind; #{rackopts[:Port]} by default" do |arg|
+        opt.on '-p', '--port NUMBER', Integer, "Port to bind; #{rackopts[:Port]} by default" do |arg|
           @rackopts[:Port] = arg
         end
 
