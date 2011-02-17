@@ -69,11 +69,12 @@ class Editserver
         end
 
         opt.on '--rc PATH', "Path to rc file; #{@opts[:rcfile]} by default" do |arg|
-          @rcopts = nil # reset cached user opts
+          @rcopts        = nil # reset cached user opts
           @opts[:rcfile] = File.expand_path arg
         end
 
         opt.on '--no-rc', 'Suppress reading of rc file' do
+          @rcopts          = nil
           @opts[:norcfile] = true
         end
 
