@@ -20,10 +20,12 @@ Everything works, and core tests are in place. More information forthcoming.
 
 ### TODO
 
+ * Ensure options precedence is `ARGV > rcfile > defaults`
  * Improve applescript reliability
+   * `do shell script` statements should always fork to background
  * Avoid dynamic creation of Editor subclasses in `Editserver::` namespace
    (a consequence of an earlier design decision)
- * Special case: OS X's `Terminal.app` as `editor['terminal']`
+ * Special case: OS X's `Terminal.app` as a valid terminal
 
 
 [1]: https://chrome.google.com/webstore/detail/ppoadiihggafnhokfkpphojggcdigllp
