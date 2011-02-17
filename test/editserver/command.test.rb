@@ -47,7 +47,7 @@ describe Editserver::Command do
     end
   end
 
-  describe :rcfile_accessors do
+  describe :rcopts do
     before do
       @rcfile = Tempfile.new 'editserverrc'
       @cmd.instance_variable_get(:@opts)[:rcfile] = @rcfile.path
@@ -55,42 +55,56 @@ describe Editserver::Command do
 
     after { (@rcfile.close; @rcfile.unlink) if @rcfile.path }
 
-    describe :rcopts do
-      it 'should load the YAML file specified at @opts[:rcfile]' do
-        opts = { 'editor' => { 'default' => 'emacs', 'terminal' => 'xterm' }, 'rack' => { 'port' => 1000 } }
-        @rcfile.write opts.to_yaml
-        @rcfile.rewind
-        @cmd.rcopts.must_equal opts
-      end
-
-      it 'should create any missing top level keys' do
-        @rcfile.write({ 'foo' => 'bar' }.to_yaml)
-        @rcfile.rewind
-        @cmd.rcopts.must_equal 'foo' => 'bar', 'rack' => {}, 'editor' => {}
-      end
-
-      it 'should return bare options if --no-rc is specified' do
-        opts = { 'editor' => { 'default' => 'emacs', 'terminal' => 'xterm' }, 'rack' => { 'port' => 1000 } }
-        @rcfile.write opts.to_yaml
-        @rcfile.rewind
-        @cmd.instance_variable_get(:@opts)[:norcfile] = true
-        @cmd.rcopts.must_equal 'rack' => {}, 'editor' => {}
-      end
-
-      it 'should return bare options if rcfile does not exist' do
-        opts = { 'editor' => { 'default' => 'emacs', 'terminal' => 'xterm' }, 'rack' => { 'port' => 1000 } }
-        @rcfile.write opts.to_yaml
-        @rcfile.rewind
-        @rcfile.close
-        @rcfile.unlink
-        @cmd.rcopts.must_equal 'rack' => {}, 'editor' => {}
-      end
+    it 'should load the YAML file specified at @opts[:rcfile]' do
+      opts = { 'editor' => { 'default' => 'emacs', 'terminal' => 'xterm' }, 'rack' => { 'port' => 1000 } }
+      @rcfile.write opts.to_yaml
+      @rcfile.rewind
+      @cmd.rcopts.must_equal opts
     end
 
-    describe :rackopts do
+    it 'should create any missing top level keys' do
+      @rcfile.write({ 'foo' => 'bar' }.to_yaml)
+      @rcfile.rewind
+      @cmd.rcopts.must_equal 'foo' => 'bar', 'rack' => {}, 'editor' => {}
     end
 
-    describe :editoropts do
+    it 'should return bare options if --no-rc is specified' do
+      opts = { 'editor' => { 'default' => 'emacs', 'terminal' => 'xterm' }, 'rack' => { 'port' => 1000 } }
+      @rcfile.write opts.to_yaml
+      @rcfile.rewind
+      @cmd.instance_variable_get(:@opts)[:norcfile] = true
+      @cmd.rcopts.must_equal 'rack' => {}, 'editor' => {}
+    end
+
+    it 'should return bare options if rcfile does not exist' do
+      opts = { 'editor' => { 'default' => 'emacs', 'terminal' => 'xterm' }, 'rack' => { 'port' => 1000 } }
+      @rcfile.write opts.to_yaml
+      @rcfile.rewind
+      @rcfile.close
+      @rcfile.unlink
+      @cmd.rcopts.must_equal 'rack' => {}, 'editor' => {}
+    end
+  end # rcopts
+
+  describe :rackopts do
+    it 'should return @rackopts masked with @rcopts' do
+      @cmd.instance_variable_get(:@opts)[:rcfile] = '/dev/null'
+      @cmd.rackopts[:Port].must_equal 9999
+      @cmd.rackopts[:Host].must_equal '127.0.0.1'
+      @cmd.instance_variable_get(:@rcopts).merge!('rack' => { 'port' => 65535, 'host' => '1.1.1.1' })
+      @cmd.rackopts[:Port].must_equal 65535
+      @cmd.rackopts[:Host].must_equal '1.1.1.1'
+    end
+  end
+
+  describe :editoropts do
+    it 'should return @editoropts masked with @rcopts' do
+      @cmd.instance_variable_get(:@opts)[:rcfile] = '/dev/null'
+      @cmd.editoropts['default'].must_equal nil
+      @cmd.editoropts['terminal'].must_equal nil
+      @cmd.instance_variable_get(:@rcopts).merge!('editor' => { 'default' => 'pony', 'terminal' => 'sparkles' })
+      @cmd.editoropts['default'].must_equal 'pony'
+      @cmd.editoropts['terminal'].must_equal 'sparkles'
     end
   end
 
