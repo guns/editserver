@@ -152,8 +152,10 @@ class Editserver
         begin
           say banner
           server.start
-        ensure
           say fx("\nGoodbye!", [32,1])
+        rescue StandardError => e
+          say fx(e.to_s, [31,1])
+          exit e.respond_to?(:errno) ? e.errno : 1
         end
       end
     end
