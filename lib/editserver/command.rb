@@ -38,6 +38,10 @@ class Editserver
           Options:
         ).gsub /^ +/, ''
 
+        opt.on '-H', '--host HOST', "IP/Hostname to bind to; #{@opts[:Host]} by default" do |arg|
+          @rackopts[:Host] = arg
+        end
+
         opt.on '-p', '--port NUMBER', Integer, "default: #{rackopts[:Port]}" do |arg|
           @rackopts[:Port] = arg
         end
@@ -54,6 +58,11 @@ class Editserver
 
         opt.on '--no-rc', 'Suppress reading of rc file' do
           @opts[:norcfile] = true
+        end
+
+        # normally implicit, but must be explicit when having an option beginning with `h'
+        opt.on '-h', '--help' do
+          puts opt; exit
         end
       end
     end

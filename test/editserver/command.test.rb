@@ -17,7 +17,7 @@ describe Editserver::Command do
       cmd.instance_variable_get(:@editoropts).must_equal('default' => nil, 'terminal' => nil)
       cmd.instance_variable_get(:@rackopts).keys.sort_by(&:to_s).must_equal [
         :Host, :Port, :Logger, :AccessLog, :pid, :config, :environment
-      ].sort_by &:to_s
+      ].sort_by(&:to_s)
     end
   end
 
@@ -29,6 +29,9 @@ describe Editserver::Command do
     end
 
     it 'should modify internal state when parsing a list of arguments' do
+      @cmd.options.parse %w[--host 0.0.0.0]
+      @cmd.instance_variable_get(:@rackopts)[:Host].must_equal '0.0.0.0'
+
       @cmd.options.parse %w[--port 1000]
       @cmd.instance_variable_get(:@rackopts)[:Port].must_equal 1000
 
