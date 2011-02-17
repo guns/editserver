@@ -42,7 +42,7 @@ class Editserver
           @rackopts[:Host] = arg
         end
 
-        opt.on '-p', '--port NUMBER', Integer, "default: #{rackopts[:Port]}" do |arg|
+        opt.on '-P', '--port NUMBER', Integer, "default: #{rackopts[:Port]}" do |arg|
           @rackopts[:Port] = arg
         end
 
@@ -50,8 +50,7 @@ class Editserver
           @editoropts['terminal'] = arg
         end
 
-        opt.on '--rc PATH', "Path to rc file; #{@opts[:rcfile]} by default",
-               '(Also can be set by exporting EDITSERVERRC to environment)' do |arg|
+        opt.on '--rc PATH', "Path to rc file; #{@opts[:rcfile]} by default" do |arg|
           @rcopts = nil # reset cached user opts
           @opts[:rcfile] = File.expand_path arg
         end
@@ -70,13 +69,13 @@ class Editserver
     def rcopts
       @rcopts ||= begin
         empty  = { 'rack' => {}, 'editor' => {} }
-        rcfile = File.expand_path ENV['EDITSERVERRC'] || @opts[:rcfile]
+        rcfile = File.expand_path @opts[:rcfile]
 
         if @opts[:norcfile]
           empty
         elsif File.exists? rcfile
           opts = YAML.load_file File.expand_path(rcfile)
-          opts           ||= {}
+          opts             = {} unless opts.is_a? Hash
           opts['rack']   ||= {}
           opts['editor'] ||= {}
           opts
