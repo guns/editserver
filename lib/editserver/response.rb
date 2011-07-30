@@ -54,7 +54,7 @@ class Editserver
         end
       end
 
-      name.gsub /[^\w\.]+/, '-'
+      name.gsub(/[^\w\.]+/, '-')[/.{0,11}/]
     end
   end
 end
