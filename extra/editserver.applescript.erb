@@ -31,7 +31,7 @@ set output to do shell script "/usr/bin/env ruby -r cgi -e '
                        --data url=#{CGI.escape %q(" & current_app & ")}
                        --data text=#{CGI.escape %x(pbpaste)}
                        http://127.0.0.1:<%= @port %>]
-    ' | pbcopy" -- pipe to clipboard
+    ' | env LANG=en_US.UTF-8 pbcopy" -- pipe to clipboard
 
 tell application current_app
     activate -- make sure we switch back; not all editors will raise focus
