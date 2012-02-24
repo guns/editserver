@@ -10,7 +10,6 @@ class Editserver
 
     def start_server
       pid = fork { exec *(terminal + %w[-e vim --servername EDITSERVER]) }
-      sleep 2 # HACK: a moment to initialize before returning
       Process.detach pid
     end
 
@@ -19,6 +18,7 @@ class Editserver
         File.open(file, 'w') { |f| f.write 'No terminal defined!' }
       else
         start_server unless server_available?
+        sleep 0.1 until server_available?
         super
       end
     end
